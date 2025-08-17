@@ -34,3 +34,25 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+---
+  description: Standards for frontend components
+  globs:
+    - src/components/**/*
+  alwaysApply: false
+  ---
+
+  Frontend components
+  - Use Tailwind CSS for styling.
+  - Use Framer Motion for animations.
+  - Structure:
+    1) Props interface/type at top
+    2) Named component export
+    3) Styles at bottom
+  - Accessibility: provide appropriate aria-* for interactive elements.
+  - Avoid inline styles; prefer utility classes or CSS modules.
+
+IMPORTANT
+  use context7
+

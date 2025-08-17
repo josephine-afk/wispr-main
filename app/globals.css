@@ -1,26 +1,310 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #e8e8e8;
+  --foreground: #191314;
+  --card: #ffffff;
+  --accent: #b7f172;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-accent: var(--accent);
+  --font-system: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Dark mode colors when html has dark class */
+html.dark {
+  --background: #000000;
+  --foreground: #f5f5f7;
+  --card: #101112;
+  --accent: #b7f172;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-system);
+  font-feature-settings: "kern";
+  letter-spacing: -0.016em;
+}
+
+.font-poppins {
+  font-family: var(--font-poppins), system-ui, sans-serif;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slideDown {
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Connect Button Styles */
+.connect-btn {
+  background: white;
+  color: #374151;
+  font-family: inherit;
+  padding: 0.5rem 1rem;
+  padding-right: 3.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  height: 48px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dark .connect-btn {
+  background: rgba(0, 0, 0, 0.3);
+  color: #9ca3af;
+  border-color: #374151;
+}
+
+.connect-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.dark .connect-btn:hover {
+  background: rgba(0, 0, 0, 0.5);
+  border-color: #4b5563;
+}
+
+.connect-btn .icon {
+  background: black;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 12px);
+  width: 36px;
+  border-radius: 0.375rem;
+  right: 6px;
+  top: 6px;
+  transition: all 0.2s ease-out;
+  overflow: hidden;
+}
+
+.dark .connect-btn .icon {
+  background: white;
+}
+
+.connect-btn:hover .icon {
+  width: calc(100% - 12px);
+}
+
+/* Arrow icon - visible by default */
+.connect-btn .icon-arrow {
+  width: 14px;
+  height: 14px;
+  color: white;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  position: absolute;
+}
+
+.dark .connect-btn .icon-arrow {
+  color: black;
+}
+
+/* Text - hidden by default */
+.connect-btn .icon-text {
+  color: white;
+  white-space: nowrap;
+  position: absolute;
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.2s ease 0.1s;
+}
+
+.dark .connect-btn .icon-text {
+  color: black;
+}
+
+/* On hover - hide arrow, show text */
+.connect-btn:hover .icon-arrow {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.connect-btn:hover .icon-text {
+  opacity: 1;
+}
+
+.connect-btn:active {
+  transform: scale(0.98);
+}
+
+/* Text color transition for hover state */
+.connect-btn:hover {
+  color: white;
+  transition-delay: 0.1s;
+}
+
+.dark .connect-btn:hover {
+  color: black;
+  transition-delay: 0.1s;
+}
+
+/* Custom Toast Styles */
+.Toastify__toast-container {
+  top: 104px !important; /* More spacing under navbar + profile pic */
+  right: 48px !important; /* Aligned with right side elements */
+  width: auto !important;
+  max-width: 280px !important;
+  z-index: 9999 !important;
+}
+
+@media (max-width: 1024px) {
+  .Toastify__toast-container {
+    right: 32px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .Toastify__toast-container {
+    top: 96px !important;
+    right: 24px !important;
+    left: 24px !important;
+    width: auto !important;
+  }
+}
+
+/* Toast fade in animation */
+@keyframes toastFadeInAnimation {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Toast fade out animation */
+@keyframes toastFadeOutAnimation {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* Classes for cssTransition */
+.toastFadeIn {
+  animation: toastFadeInAnimation 0.3s ease-out forwards;
+}
+
+.toastFadeOut {
+  animation: toastFadeOutAnimation 0.3s ease-in forwards;
+  pointer-events: none; /* Prevent interaction during fade out */
+}
+
+.Toastify__toast {
+  background: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid #e5e7eb !important; /* gray-200 to match tab selector */
+  border-radius: 0.5rem !important;
+  color: #191314 !important;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, monospace !important; /* Font-mono like projects */
+  font-size: 0.75rem !important; /* text-xs */
+  padding: 0.75rem 1rem !important;
+  box-shadow: none !important; /* Clean, no shadow like projects cards */
+  min-height: auto !important;
+  font-weight: 500;
+}
+
+
+/* Add spacing between Toastify icon and text */
+.Toastify__toast-icon {
+  margin-right: 1rem !important; /* More space between icon and text */
+  width: 20px !important;
+  flex-shrink: 0 !important;
+}
+
+.dark .Toastify__toast {
+  background: rgba(0, 0, 0, 0.3) !important; /* Same as dark cards */
+  border: 1px solid #1f2937 !important; /* gray-800 to match tab selector */
+  color: #f5f5f7 !important;
+}
+
+/* Success and error toasts - minimal color hints */
+.Toastify__toast--success {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid #e5e7eb !important; /* gray-200 */
+  color: #191314 !important;
+}
+
+.dark .Toastify__toast--success {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid #1f2937 !important; /* gray-800 */
+  color: #f5f5f7 !important;
+}
+
+.Toastify__toast--error {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid #e5e7eb !important; /* gray-200 */
+  color: #191314 !important;
+}
+
+.dark .Toastify__toast--error {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid #1f2937 !important; /* gray-800 */
+  color: #f5f5f7 !important;
+}
+
+/* Hide progress bar */
+.Toastify__progress-bar-container {
+  display: none !important;
+}
+
+/* Make progress bar background transparent if shown */
+.Toastify__progress-bar--bg {
+  background: transparent !important;
+}
+
+/* Hide close button for cleaner look */
+.Toastify__close-button {
+  display: none !important;
 }
