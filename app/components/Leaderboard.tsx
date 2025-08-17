@@ -229,7 +229,7 @@ export default function Leaderboard() {
           <div className="col-span-1">#</div>
           <div className="col-span-3">Project</div>
           <div className="col-span-2 text-right">Followers</div>
-          <div className="col-span-2 text-right">Smart</div>
+          <div className="col-span-2 text-right">Smart %</div>
           <div className="col-span-1 text-right">{getMetricLabel(metric)}</div>
           <div className="col-span-2 text-center">Trend</div>
           <div className="col-span-1"></div>
@@ -325,7 +325,10 @@ export default function Leaderboard() {
                 {/* Smart Followers */}
                 <div className="col-span-2 flex items-center justify-end">
                   <span className="font-mono text-xs text-gray-600 dark:text-gray-400">
-                    {project.smart_followers_count.toLocaleString()}
+                    {project.followers_count > 0 
+                      ? `${((project.smart_followers_count / project.followers_count) * 100).toFixed(1)}%`
+                      : '0%'
+                    }
                   </span>
                 </div>
 
