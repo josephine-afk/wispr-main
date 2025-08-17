@@ -343,7 +343,7 @@ export default function Leaderboard() {
 
                 {/* Selected Metric */}
                 <div className="col-span-1 flex items-center justify-end">
-                  <span className="font-mono text-sm font-medium text-gray-900 dark:text-white">
+                  <span className="font-mono text-xs text-gray-600 dark:text-gray-400">
                     {metricValue.toLocaleString()}
                   </span>
                 </div>
