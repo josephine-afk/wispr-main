@@ -28,7 +28,7 @@ interface LeaderboardProject {
 type MetricType = 'points' | 'followers_growth' | 'smart_followers' | 'engagement';
 
 export default function Leaderboard() {
-  const [timePeriod, setTimePeriod] = useState<'7d' | '30d'>('7d');
+  const [timePeriod, setTimePeriod] = useState<'24h' | '7d' | '30d'>('7d');
   const [metric, setMetric] = useState<MetricType>('points');
   const [projects, setProjects] = useState<LeaderboardProject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,9 +143,19 @@ export default function Leaderboard() {
         {/* Subtitle and Time Period Selector Row */}
         <div className="flex items-start justify-between">
           <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-            /projects/{metric.replace('_', '-')}/{timePeriod === '7d' ? 'weekly' : 'monthly'}
+            /projects/{metric.replace('_', '-')}/{timePeriod === '24h' ? 'daily' : timePeriod === '7d' ? 'weekly' : 'monthly'}
           </p>
           <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-900 rounded-lg mt-2">
+            <button
+              onClick={() => setTimePeriod('24h')}
+              className={`px-3 py-1.5 text-xs font-mono rounded-md transition-all ${
+                timePeriod === '24h'
+                  ? 'bg-white dark:bg-black text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              24h
+            </button>
             <button
               onClick={() => setTimePeriod('7d')}
               className={`px-3 py-1.5 text-xs font-mono rounded-md transition-all ${
