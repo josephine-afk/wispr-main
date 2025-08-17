@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Activity, Users, Brain } from 'lucide-react';
+import Sparkline from './Sparkline';
 
 interface ProjectStats {
   followers_growth: number;
@@ -122,10 +123,10 @@ export default function Leaderboard() {
 
   const getMetricLabel = (metric: MetricType) => {
     switch (metric) {
-      case 'points': return 'Points';
-      case 'followers_growth': return 'Growth';
-      case 'smart_followers': return 'Smart Followers';
-      case 'engagement': return 'Engagement';
+      case 'points': return 'Pts';
+      case 'followers_growth': return '+Fol';
+      case 'smart_followers': return 'Smart';
+      case 'engagement': return 'Eng';
     }
   };
 
@@ -224,11 +225,13 @@ export default function Leaderboard() {
         </div>
       ) : (
       <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white/50 dark:bg-black/30 backdrop-blur-sm">
-        <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800 text-xs font-mono text-gray-500 uppercase">
+        <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800 text-xs font-mono text-gray-500 uppercase">
           <div className="col-span-1">#</div>
-          <div className="col-span-5">Project</div>
-          <div className="col-span-3 text-right">{getMetricLabel(metric)}</div>
-          <div className="col-span-2 text-right">Momentum</div>
+          <div className="col-span-3">Project</div>
+          <div className="col-span-2 text-right">Followers</div>
+          <div className="col-span-2 text-right">Smart</div>
+          <div className="col-span-1 text-right">{getMetricLabel(metric)}</div>
+          <div className="col-span-2 text-center">Trend</div>
           <div className="col-span-1"></div>
         </div>
 
@@ -262,7 +265,7 @@ export default function Leaderboard() {
             return (
               <div
                 key={project.id}
-                className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors group cursor-pointer"
+                className="grid grid-cols-12 gap-2 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors group cursor-pointer"
               >
                 {/* Rank */}
                 <div className="col-span-1 flex items-center">
@@ -277,15 +280,15 @@ export default function Leaderboard() {
                 </div>
 
                 {/* Project Info */}
-                <div className="col-span-5 flex items-center gap-3">
+                <div className="col-span-3 flex items-center gap-2">
                   {project.avatar_url ? (
                     <img 
                       src={project.avatar_url} 
                       alt={project.display_name}
-                      className="w-8 h-8 rounded-full object-cover"
+                      className="w-7 h-7 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                       rank <= 3 
                         ? 'bg-black text-white dark:bg-white dark:text-black' 
                         : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
@@ -293,11 +296,13 @@ export default function Leaderboard() {
                       {project.display_name.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="truncate">
                       <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {project.display_name}
                       </span>
+                    </div>
+                    <div className="truncate">
                       <span className="text-xs text-gray-400 font-mono">
                         @{project.name}
                       </span>
@@ -305,36 +310,57 @@ export default function Leaderboard() {
                   </div>
                 </div>
 
-                {/* Metric Value */}
-                <div className="col-span-3 flex items-center justify-end">
-                  <span className="font-mono text-sm text-gray-900 dark:text-white">
-                    {metric === 'engagement' 
-                      ? metricValue.toLocaleString()
-                      : metricValue.toLocaleString()
-                    }
+                {/* Followers */}
+                <div className="col-span-2 flex items-center justify-end gap-1">
+                  <span className="font-mono text-xs text-gray-600 dark:text-gray-400">
+                    {project.followers_count.toLocaleString()}
+                  </span>
+                  {project.stats?.followers_growth && project.stats.followers_growth > 0 && (
+                    <span className="text-xs font-mono text-green-500">
+                      +{project.stats.followers_growth}
+                    </span>
+                  )}
+                </div>
+
+                {/* Smart Followers */}
+                <div className="col-span-2 flex items-center justify-end">
+                  <span className="font-mono text-xs text-gray-600 dark:text-gray-400">
+                    {project.smart_followers_count.toLocaleString()}
                   </span>
                 </div>
 
-                {/* Momentum */}
-                <div className="col-span-2 flex items-center justify-end gap-1">
-                  {project.stats?.momentum === 'rising' && (
-                    <>
+                {/* Selected Metric */}
+                <div className="col-span-1 flex items-center justify-end">
+                  <span className="font-mono text-sm font-medium text-gray-900 dark:text-white">
+                    {metricValue.toLocaleString()}
+                  </span>
+                </div>
+
+                {/* Sparkline & Momentum */}
+                <div className="col-span-2 flex items-center justify-center gap-2">
+                  {project.stats?.sparkline && project.stats.sparkline.length > 0 && (
+                    <Sparkline 
+                      data={project.stats.sparkline} 
+                      color={
+                        project.stats.momentum === 'rising' ? 'green' : 
+                        project.stats.momentum === 'falling' ? 'red' : 
+                        'gray'
+                      }
+                      width={50}
+                      height={18}
+                    />
+                  )}
+                  <div className="flex items-center gap-1">
+                    {project.stats?.momentum === 'rising' && (
                       <TrendingUp className="w-3 h-3 text-green-500" />
-                      <span className="text-xs font-mono text-green-500">rising</span>
-                    </>
-                  )}
-                  {project.stats?.momentum === 'falling' && (
-                    <>
+                    )}
+                    {project.stats?.momentum === 'falling' && (
                       <TrendingDown className="w-3 h-3 text-red-500" />
-                      <span className="text-xs font-mono text-red-500">falling</span>
-                    </>
-                  )}
-                  {(!project.stats || project.stats.momentum === 'stable') && (
-                    <>
+                    )}
+                    {(!project.stats || project.stats.momentum === 'stable') && (
                       <Minus className="w-3 h-3 text-gray-400" />
-                      <span className="text-xs font-mono text-gray-400">stable</span>
-                    </>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Action */}
