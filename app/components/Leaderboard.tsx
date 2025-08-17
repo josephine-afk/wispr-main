@@ -235,14 +235,13 @@ export default function Leaderboard() {
         </div>
       ) : (
       <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white/50 dark:bg-black/30 backdrop-blur-sm">
-        <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800 text-xs font-mono text-gray-500 uppercase">
+        <div className="grid grid-cols-11 gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800 text-xs font-mono text-gray-500 uppercase">
           <div className="col-span-1">#</div>
           <div className="col-span-3">Project</div>
           <div className="col-span-2 text-right">Followers</div>
           <div className="col-span-2 text-right">Smart %</div>
           <div className="col-span-1 text-right">{getMetricLabel(metric)}</div>
           <div className="col-span-2 text-center">Trend</div>
-          <div className="col-span-1"></div>
         </div>
 
         {/* Table Body */}
@@ -275,7 +274,7 @@ export default function Leaderboard() {
             return (
               <div
                 key={project.id}
-                className="grid grid-cols-12 gap-2 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors group cursor-pointer"
+                className="grid grid-cols-11 gap-2 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors group cursor-pointer"
               >
                 {/* Rank */}
                 <div className="col-span-1 flex items-center">
@@ -374,13 +373,6 @@ export default function Leaderboard() {
                       <Minus className="w-3 h-3 text-gray-400" />
                     )}
                   </div>
-                </div>
-
-                {/* Action */}
-                <div className="col-span-1 flex items-center justify-end">
-                  <button className="opacity-0 group-hover:opacity-100 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all font-mono">
-                    →
-                  </button>
                 </div>
               </div>
             );
