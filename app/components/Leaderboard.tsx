@@ -62,7 +62,11 @@ export default function Leaderboard() {
         console.log('API Response:', data); // Debug log
         
         // Handle the response structure
-        if (Array.isArray(data)) {
+        if (data.data && Array.isArray(data.data)) {
+          // API returns { data: [...] }
+          setProjects(data.data);
+          setLastUpdated(new Date().toLocaleTimeString());
+        } else if (Array.isArray(data)) {
           setProjects(data);
           setLastUpdated(new Date().toLocaleTimeString());
         } else if (data.projects && Array.isArray(data.projects)) {
