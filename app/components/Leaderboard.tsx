@@ -4,55 +4,30 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react';
 
-interface ProjectPeriodData {
-  points: { value: number; rank: number };
-  followers_growth: { value: number; rank: number };
-  smart_followers: { value: number; rank: number };
-  engagement: { value: number; rank: number };
-  momentum: { value: number; trend: 'rising' | 'falling' | 'stable' };
-  sparkline?: Array<{ date: string; value: number }>;
+interface ProjectStats {
+  followers_growth: number;
+  engagement_count: number;
+  momentum: 'rising' | 'falling' | 'stable';
+  sparkline: number[];
+  period: string;
 }
 
 interface LeaderboardProject {
-  username: string;
+  id: string;
   name: string;
+  display_name: string;
+  username?: string;
   avatar_url?: string;
-  periods: {
-    '24h': ProjectPeriodData;
-    '7d': ProjectPeriodData;
-    '30d': ProjectPeriodData;
-  };
-}
-
-interface LeaderboardResponse {
-  success: boolean;
-  data: {
-    projects: LeaderboardProject[];
-    meta: {
-      metrics: string[];
-      periods: string[];
-      page: number;
-      limit: number;
-      totalProjects: number;
-      totalPages: number;
-    };
-    aggregates: {
-      [key: string]: {
-        totalEngagement: number;
-        totalFollowersGrowth: number;
-        avgEngagement: number;
-        avgGrowth: number;
-        activeProjects: number;
-      };
-    };
-    lastUpdated: string;
-  };
+  followers_count: number;
+  smart_followers_count: number;
+  global_points: number;
+  stats?: ProjectStats;
 }
 
 type MetricType = 'points' | 'followers_growth' | 'smart_followers' | 'engagement';
 
 export default function Leaderboard() {
-  const [timePeriod, setTimePeriod] = useState<'24h' | '7d' | '30d'>('7d');
+  const [timePeriod, setTimePeriod] = useState<'7d' | '30d'>('7d');
   const [metric, setMetric] = useState<MetricType>('points');
   const [projects, setProjects] = useState<LeaderboardProject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,8 +38,11 @@ export default function Leaderboard() {
     const fetchLeaderboard = async () => {
       try {
         setLoading(true);
+        setError(null);
+        
+        // Use the correct endpoint with stats
         const response = await fetch(
-          'https://api.wispr.top/stats/leaderboard?metrics=points,followers_growth,smart_followers,engagement&periods=24h,7d,30d&limit=200',
+          `https://api.wispr.top/projects?include_stats=true&stats_period=${timePeriod}`,
           {
             method: 'GET',
             headers: {
@@ -77,32 +55,27 @@ export default function Leaderboard() {
         if (!response.ok) {
           const errorText = await response.text();
           console.error('API Error Response:', response.status, errorText);
-          throw new Error(`Failed to fetch leaderboard data: ${response.status}`);
+          throw new Error(`Failed to fetch projects: ${response.status}`);
         }
         
         const data = await response.json();
         console.log('API Response:', data); // Debug log
         
-        // Handle different possible response structures
-        if (data.success && data.data && data.data.projects) {
-          setProjects(data.data.projects);
-          if (data.data.lastUpdated) {
-            setLastUpdated(new Date(data.data.lastUpdated).toLocaleTimeString());
-          }
-        } else if (Array.isArray(data.projects)) {
-          // Direct projects array
-          setProjects(data.projects);
-        } else if (Array.isArray(data)) {
-          // Direct array response
+        // Handle the response structure
+        if (Array.isArray(data)) {
           setProjects(data);
+          setLastUpdated(new Date().toLocaleTimeString());
+        } else if (data.projects && Array.isArray(data.projects)) {
+          setProjects(data.projects);
+          setLastUpdated(new Date().toLocaleTimeString());
         } else {
           console.error('Unexpected API response structure:', data);
-          setProjects([]); // Set empty array to avoid crash
+          setProjects([]);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
-        console.error('Failed to fetch leaderboard:', err);
-        setProjects([]); // Set empty array on error
+        console.error('Failed to fetch projects:', err);
+        setProjects([]);
       } finally {
         setLoading(false);
       }
@@ -114,13 +87,32 @@ export default function Leaderboard() {
     const interval = setInterval(fetchLeaderboard, 5 * 60 * 1000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [timePeriod]); // Re-fetch when time period changes
 
-  // Sort projects by the selected metric and period
+  // Sort projects by the selected metric
   const sortedProjects = [...projects].sort((a, b) => {
-    // Safety checks for data structure
-    const aValue = a?.periods?.[timePeriod]?.[metric]?.value ?? 0;
-    const bValue = b?.periods?.[timePeriod]?.[metric]?.value ?? 0;
+    let aValue = 0;
+    let bValue = 0;
+    
+    switch (metric) {
+      case 'points':
+        aValue = a.global_points || 0;
+        bValue = b.global_points || 0;
+        break;
+      case 'followers_growth':
+        aValue = a.stats?.followers_growth || 0;
+        bValue = b.stats?.followers_growth || 0;
+        break;
+      case 'smart_followers':
+        aValue = a.smart_followers_count || 0;
+        bValue = b.smart_followers_count || 0;
+        break;
+      case 'engagement':
+        aValue = a.stats?.engagement_count || 0;
+        bValue = b.stats?.engagement_count || 0;
+        break;
+    }
+    
     return bValue - aValue; // Sort descending
   });
 
@@ -146,19 +138,9 @@ export default function Leaderboard() {
         {/* Subtitle and Time Period Selector Row */}
         <div className="flex items-start justify-between">
           <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-            /projects/{metric.replace('_', '-')}/{timePeriod === '24h' ? 'daily' : timePeriod === '7d' ? 'weekly' : 'monthly'}
+            /projects/{metric.replace('_', '-')}/{timePeriod === '7d' ? 'weekly' : 'monthly'}
           </p>
           <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-900 rounded-lg mt-2">
-            <button
-              onClick={() => setTimePeriod('24h')}
-              className={`px-3 py-1.5 text-xs font-mono rounded-md transition-all ${
-                timePeriod === '24h'
-                  ? 'bg-white dark:bg-black text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              24h
-            </button>
             <button
               onClick={() => setTimePeriod('7d')}
               className={`px-3 py-1.5 text-xs font-mono rounded-md transition-all ${
@@ -254,14 +236,28 @@ export default function Leaderboard() {
             </div>
           ) : (
             sortedProjects.map((project, index) => {
-            const periodData = project?.periods?.[timePeriod];
-            const metricData = periodData?.[metric] ?? { value: 0, rank: 0 };
-            const momentum = periodData?.momentum ?? { value: 0, trend: 'stable' };
             const rank = index + 1;
+            
+            // Get the metric value based on selected metric
+            let metricValue = 0;
+            switch (metric) {
+              case 'points':
+                metricValue = project.global_points || 0;
+                break;
+              case 'followers_growth':
+                metricValue = project.stats?.followers_growth || 0;
+                break;
+              case 'smart_followers':
+                metricValue = project.smart_followers_count || 0;
+                break;
+              case 'engagement':
+                metricValue = project.stats?.engagement_count || 0;
+                break;
+            }
             
             return (
               <div
-                key={project.username}
+                key={project.id}
                 className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors group cursor-pointer"
               >
                 {/* Rank */}
@@ -281,7 +277,7 @@ export default function Leaderboard() {
                   {project.avatar_url ? (
                     <img 
                       src={project.avatar_url} 
-                      alt={project.name}
+                      alt={project.display_name}
                       className="w-8 h-8 rounded-full object-cover"
                     />
                   ) : (
@@ -290,16 +286,16 @@ export default function Leaderboard() {
                         ? 'bg-black text-white dark:bg-white dark:text-black' 
                         : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                     }`}>
-                      {project.name.charAt(0).toUpperCase()}
+                      {project.display_name.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {project.name}
+                        {project.display_name}
                       </span>
                       <span className="text-xs text-gray-400 font-mono">
-                        @{project.username}
+                        @{project.name}
                       </span>
                     </div>
                   </div>
@@ -309,30 +305,30 @@ export default function Leaderboard() {
                 <div className="col-span-3 flex items-center justify-end">
                   <span className="font-mono text-sm text-gray-900 dark:text-white">
                     {metric === 'engagement' 
-                      ? `${(metricData.value * 100).toFixed(2)}%`
-                      : metricData.value.toLocaleString()
+                      ? metricValue.toLocaleString()
+                      : metricValue.toLocaleString()
                     }
                   </span>
                 </div>
 
                 {/* Momentum */}
                 <div className="col-span-2 flex items-center justify-end gap-1">
-                  {momentum.trend === 'rising' && (
+                  {project.stats?.momentum === 'rising' && (
                     <>
                       <TrendingUp className="w-3 h-3 text-green-500" />
-                      <span className="text-xs font-mono text-green-500">+{(momentum.value * 100).toFixed(1)}%</span>
+                      <span className="text-xs font-mono text-green-500">rising</span>
                     </>
                   )}
-                  {momentum.trend === 'falling' && (
+                  {project.stats?.momentum === 'falling' && (
                     <>
                       <TrendingDown className="w-3 h-3 text-red-500" />
-                      <span className="text-xs font-mono text-red-500">{(momentum.value * 100).toFixed(1)}%</span>
+                      <span className="text-xs font-mono text-red-500">falling</span>
                     </>
                   )}
-                  {momentum.trend === 'stable' && (
+                  {(!project.stats || project.stats.momentum === 'stable') && (
                     <>
                       <Minus className="w-3 h-3 text-gray-400" />
-                      <span className="text-xs font-mono text-gray-400">0%</span>
+                      <span className="text-xs font-mono text-gray-400">stable</span>
                     </>
                   )}
                 </div>
