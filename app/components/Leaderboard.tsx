@@ -330,7 +330,7 @@ export default function Leaderboard() {
                       project.stats.followers_growth < 0 ? 'text-red-500' : 
                       'text-gray-400'
                     }`}>
-                      {project.stats.followers_growth > 0 ? '+' : ''}{project.stats.followers_growth}
+                      {project.stats.followers_growth >= 0 ? '+' : ''}{project.stats.followers_growth}
                     </span>
                   )}
                 </div>
