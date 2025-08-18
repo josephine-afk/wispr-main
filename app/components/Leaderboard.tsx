@@ -365,11 +365,16 @@ export default function Leaderboard() {
                   {project.stats?.sparkline && project.stats.sparkline.length > 0 && (
                     <Sparkline 
                       data={project.stats.sparkline} 
-                      color={
-                        project.stats.momentum === 'rising' ? 'green' : 
-                        project.stats.momentum === 'falling' ? 'red' : 
-                        'gray'
-                      }
+                      color={(() => {
+                        // Calculate actual trend from sparkline data
+                        const sparkline = project.stats.sparkline;
+                        const firstValue = sparkline[0];
+                        const lastValue = sparkline[sparkline.length - 1];
+                        
+                        if (lastValue > firstValue) return 'green';
+                        if (lastValue < firstValue) return 'red';
+                        return 'gray';
+                      })()}
                       width={50}
                       height={18}
                     />
