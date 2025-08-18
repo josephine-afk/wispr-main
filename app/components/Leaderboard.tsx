@@ -34,6 +34,8 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const projectsPerPage = 10;
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -120,6 +122,12 @@ export default function Leaderboard() {
     
     return bValue - aValue; // Sort descending
   });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedProjects.length / projectsPerPage);
+  const startIndex = (currentPage - 1) * projectsPerPage;
+  const endIndex = startIndex + projectsPerPage;
+  const paginatedProjects = sortedProjects.slice(startIndex, endIndex);
 
   const getMetricLabel = (metric: MetricType) => {
     switch (metric) {
@@ -246,13 +254,13 @@ export default function Leaderboard() {
 
         {/* Table Body */}
         <div className="divide-y divide-gray-100 dark:divide-gray-800">
-          {sortedProjects.length === 0 ? (
+          {paginatedProjects.length === 0 ? (
             <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400 font-mono text-sm">
               No projects found
             </div>
           ) : (
-            sortedProjects.map((project, index) => {
-            const rank = index + 1;
+            paginatedProjects.map((project, index) => {
+            const rank = startIndex + index + 1;
             
             // Get the metric value based on selected metric
             let metricValue = 0;
@@ -386,21 +394,45 @@ export default function Leaderboard() {
       </div>
       )}
 
-      {/* Bottom Actions */}
-      <div className="mt-4 flex items-center justify-between text-xs">
-        <div className="flex items-center gap-4">
-          <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-mono transition-colors">
-            ← Previous
-          </button>
-          <span className="text-gray-400 font-mono">Page 1 of 10</span>
-          <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-mono transition-colors">
-            Next →
-          </button>
+      {/* Bottom Actions - Only show if more than 10 projects */}
+      {sortedProjects.length > projectsPerPage ? (
+        <div className="mt-4 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className={`font-mono transition-colors ${
+                currentPage === 1 
+                  ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' 
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              ← Previous
+            </button>
+            <span className="text-gray-400 font-mono">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button 
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className={`font-mono transition-colors ${
+                currentPage === totalPages
+                  ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              Next →
+            </button>
+          </div>
+          <div className="text-gray-400 font-mono">
+            {lastUpdated && `Last updated: ${lastUpdated}`}
+          </div>
         </div>
-        <div className="text-gray-400 font-mono">
+      ) : (
+        <div className="mt-4 text-right text-xs text-gray-400 font-mono">
           {lastUpdated && `Last updated: ${lastUpdated}`}
         </div>
-      </div>
+      )}
     </div>
   );
 }
