@@ -326,7 +326,9 @@ export default function Leaderboard() {
                   </span>
                   {project.stats && (
                     <span className={`text-xs font-mono ${
-                      project.stats.followers_growth > 0 ? 'text-green-500' : 'text-gray-400'
+                      project.stats.followers_growth > 0 ? 'text-green-500' : 
+                      project.stats.followers_growth < 0 ? 'text-red-500' : 
+                      'text-gray-400'
                     }`}>
                       {project.stats.followers_growth > 0 ? '+' : ''}{project.stats.followers_growth}
                     </span>
